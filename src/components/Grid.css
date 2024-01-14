@@ -1,0 +1,45 @@
+.grid {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.grid-cell {
+  border: 1px solid black;
+  width: 16px; 
+  height: 16px;
+  border-radius: 3px;
+}
+
+.road {
+    background-color: rgb(56, 56, 56);
+}
+
+.start {
+  background-color: rgb(0, 201, 0);
+}
+
+.end {
+  background-color: rgb(255, 87, 87);
+}
+
+.path {
+  background-color: rgb(94, 94, 231);
+}
+
+.center {
+  border-radius: 0px;
+  outline: 3px solid rgba(0, 0, 0, 0.795);
+  outline-offset: 18px;
+}
+
+button {
+  height: 40px;
+  min-width: 80px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: sans-serif;
+  margin: 5px 25px;
+}

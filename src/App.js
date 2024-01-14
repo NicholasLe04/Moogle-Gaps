@@ -1,23 +1,16 @@
-import logo from './logo.svg';
 import './App.css';
+import Grid from './components/Grid';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>moogle gaps</h1>
+      <p>
+        place some road pieces then place the green start point and red end point. <br/>
+        then select you pathfinding algorithm! <br/>
+        (some algorithms are not as good as others)
+      </p>
+      <Grid />
     </div>
   );
 }
