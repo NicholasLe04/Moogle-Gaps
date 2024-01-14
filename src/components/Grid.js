@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import './Grid.css';
 import depthFirstSearch from '../algorithms/DepthFirstSearch';
 import dijkstra from '../algorithms/Dijkstra';
-import { clear } from '@testing-library/user-event/dist/clear';
 
 const tiles = {
   "empty": [],
@@ -25,8 +24,11 @@ const types = {
   1: "road",
   3: "start",
   4: "end",
-  5: "path",
-  6: "building"
+  6: "building",
+  10: "path no-traffic",
+  11: "path mild-traffic",
+  12: "path moderate-traffic",
+  13: "path high-traffic",
 }
 
 function Grid() {
@@ -35,80 +37,87 @@ function Grid() {
   const [end, setEnd] = useState();
   const [currentPath, setCurrentPath] = useState([]);
   const [grid, setGrid] = useState(Array.from({ length: 36 }, () => Array(90).fill(0)));
-  const [weights, setWeights] = useState();
-
-  useEffect(() => {
-    let tempWeights = {};
-    for (let rowIdx = 0; rowIdx < 36; rowIdx ++) {
-      for (let colIdx = 0; colIdx < 90; colIdx ++) {
-        const offsets = [[1,0], [0,1], [-1,0], [0,-1]];
-  
-        for (let offsetIdx = 0; offsetIdx < 4; offsetIdx ++) {
-          const nextRow = rowIdx + offsets[offsetIdx][0];
-          const nextCol = colIdx + offsets[offsetIdx][1];
-          if (
-            (0 <= nextRow && nextRow <= 35) &&
-            (0 <= nextCol && nextCol <= 89) 
-          ) {
-            if (!([[rowIdx, colIdx], [nextRow, nextCol]] in tempWeights) && !([[nextRow, nextCol], [rowIdx, colIdx]] in tempWeights)) {
-              tempWeights[[[rowIdx, colIdx], [nextRow, nextCol]]] = 1;
-            }
-          }
-        }
-      }
-    }
-  
-    setWeights(tempWeights);
-  }, [])
-  
+  const [weights, setWeights] = useState(Array.from({ length: 36 }, () => Array(90).fill(1)));
 
   function clearGrid() {
-    setGrid(Array.from({ length: 36 }, () => Array(90).fill(0)));
+    setStart();
+    setEnd();
     setCurrentPath([]);
+    setGrid(Array.from({ length: 36 }, () => Array(90).fill(0)));
+    setWeights(Array.from({ length: 36 }, () => Array(90).fill(1)));
   }
 
   function paint(row, col) {
     resetPath();
 
-    if (selectedTile !== "start" && selectedTile !== "end") {
+    const newGrid = [...grid];
+    const newWeights = [...weights];
+    const offsets = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]]
+
+    // if painting a road tile
+    if (Object.keys(tiles).includes(selectedTile)) {
       const containerRow = Math.floor(row / 3) * 3;
       const containerCol = Math.floor(col / 3) * 3;
-      const newGrid = [...grid];
       
-      for (let row = 0; row < 3; row ++) {
-        for (let col = 0; col < 3; col ++) {
-            if (tiles[selectedTile].some(arr => JSON.stringify(arr) === JSON.stringify([row, col]))) {
-              newGrid[containerRow + row][containerCol + col] = 1;
+      // paint the 3x3 square
+      for (let rowIdx = 0; rowIdx < 3; rowIdx ++) {
+        for (let colIdx = 0; colIdx < 3; colIdx ++) {
+          const subRowIdx = containerRow + rowIdx;
+          const subColIdx = containerCol + colIdx;
+          // if painting over a building, adjust weights
+          if (newGrid[subRowIdx][subColIdx] === 6) {
+            for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
+              const offsetRow = subRowIdx+offsets[offsetIdx][0];
+              const offsetCol = subColIdx+offsets[offsetIdx][1];
+              if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
+                newWeights[offsetRow][offsetCol] --;
+              }
             }
-            else {
-              newGrid[containerRow + row][containerCol + col] = 0;
-            }
+          }
+          if (tiles[selectedTile].some(arr => JSON.stringify(arr) === JSON.stringify([rowIdx, colIdx]))) {
+            newGrid[subRowIdx][subColIdx] = 1;
+          }
+          else {
+            newGrid[subRowIdx][subColIdx] = 0;
+          }
         }
       }
-      setGrid(newGrid);
+    }
+    else if (selectedTile === "building") {
+      newGrid[row][col] = 6;
+
+      for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
+        const offsetRow = row+offsets[offsetIdx][0];
+        const offsetCol = col+offsets[offsetIdx][1];
+        if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
+          newWeights[offsetRow][offsetCol] ++;
+        }
+      }
     }
     else {
-      const newGrid = [...grid];
-      if (selectedTile === "start") {
-        newGrid.forEach(row => row.forEach((value, index) => {
-          if (value === 3) {
-            row[index] = 0;
+      
+      // Adjust weights if painting over a building
+      if (newGrid[row][col] === 6) {
+        for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
+          const offsetRow = row+offsets[offsetIdx][0];
+          const offsetCol = col+offsets[offsetIdx][1];
+          if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
+            newWeights[offsetRow][offsetCol] --;
           }
-        }));
-        newGrid[row][col] = 3;
-        setStart([row, col])
+        }
       }
-      else {
-        newGrid.forEach(row => row.forEach((value, index) => {
-          if (value === 4) {
-            row[index] = 0;
-          }
-        }));
-        newGrid[row][col] = 4;
-        setEnd([row, col])
-      }
-      setGrid(newGrid);
+
+      const newValue = selectedTile === "start" ? 3 : 4
+      newGrid.forEach(row => row.forEach((value, index) => {
+        if (value === newValue) {
+          row[index] = 0;
+        }
+      }));
+      newGrid[row][col] = newValue;
+      newValue === 3 ? setStart([row, col]) : setEnd([row, col]);
     }
+    setWeights(newWeights);
+    setGrid(newGrid);
   }
 
   function pathfind(algorithm) {
@@ -138,7 +147,7 @@ function Grid() {
         if (i < path.length - 1) {
           const [pathRow, pathCol] = path[i];
           const newGrid = [...grid];
-          newGrid[pathRow][pathCol] = 5;
+          newGrid[pathRow][pathCol] = 10 + Math.floor(weights[pathRow][pathCol] / 2);
           setGrid(newGrid);
           i++;
         } 
@@ -181,13 +190,16 @@ function Grid() {
       <button onClick={() => pathfind('dijkstra')}>dijkstra</button>
       <ul style={{display: "flex", alignItems: "center", justifyContent: "space-between", listStyle: "none"}}>
         <li onClick={() => setSelectedTile("start")}>
-          <div className='grid-cell start'/>
+          Start
+          <div className='grid-cell-lrg start'/>
         </li>
         <li onClick={() => setSelectedTile("end")}>
-          <div className='grid-cell end'/>
+          End
+          <div className='grid-cell-lrg end'/>
         </li>
         <li onClick={() => setSelectedTile("building")}>
-          <div className='grid-cell building'/>
+          Building
+          <div className='grid-cell-lrg building'/>
         </li>
         {
           Object.keys(tiles).map((tile) => {

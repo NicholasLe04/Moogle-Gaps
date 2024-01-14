@@ -57,11 +57,7 @@ function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
         (grid[newRow][newCol] === 1 || grid[newRow][newCol] === 4)
       ) {
         // alt <- dist[u] + Graph.Edges(u,v)
-        const alt = dist[u[0]][u[1]] + (
-          [[u[0], u[1]], [newRow, newCol]] in weights ? 
-          weights[[[u[0], u[1]], [newRow, newCol]]] : 
-          weights[[[newRow, newCol], [u[0], u[1]]]]
-        );
+        const alt = dist[u[0]][u[1]] + weights[newRow][newCol];
         //if alt < dist[v]:
         if (alt < dist[newRow][newCol]) {
           //dist[v] <- alt
