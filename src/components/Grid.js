@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Grid.css';
-import dfs_util from '../algorithms/DepthFirstSearch';
-import dijkstra_util from '../algorithms/Dijkstra';
+import depthFirstSearch from '../algorithms/DepthFirstSearch';
+import dijkstra from '../algorithms/Dijkstra';
 import { clear } from '@testing-library/user-event/dist/clear';
 
 const tiles = {
@@ -26,7 +26,7 @@ const types = {
   3: "start",
   4: "end",
   5: "path",
-  6: "brown"
+  6: "building"
 }
 
 function Grid() {
@@ -35,6 +35,32 @@ function Grid() {
   const [end, setEnd] = useState();
   const [currentPath, setCurrentPath] = useState([]);
   const [grid, setGrid] = useState(Array.from({ length: 36 }, () => Array(90).fill(0)));
+  const [weights, setWeights] = useState();
+
+  useEffect(() => {
+    let tempWeights = {};
+    for (let rowIdx = 0; rowIdx < 36; rowIdx ++) {
+      for (let colIdx = 0; colIdx < 90; colIdx ++) {
+        const offsets = [[1,0], [0,1], [-1,0], [0,-1]];
+  
+        for (let offsetIdx = 0; offsetIdx < 4; offsetIdx ++) {
+          const nextRow = rowIdx + offsets[offsetIdx][0];
+          const nextCol = colIdx + offsets[offsetIdx][1];
+          if (
+            (0 <= nextRow && nextRow <= 35) &&
+            (0 <= nextCol && nextCol <= 89) 
+          ) {
+            if (!([[rowIdx, colIdx], [nextRow, nextCol]] in tempWeights) && !([[nextRow, nextCol], [rowIdx, colIdx]] in tempWeights)) {
+              tempWeights[[[rowIdx, colIdx], [nextRow, nextCol]]] = 1;
+            }
+          }
+        }
+      }
+    }
+  
+    setWeights(tempWeights);
+  }, [])
+  
 
   function clearGrid() {
     setGrid(Array.from({ length: 36 }, () => Array(90).fill(0)));
@@ -42,6 +68,8 @@ function Grid() {
   }
 
   function paint(row, col) {
+    resetPath();
+
     if (selectedTile !== "start" && selectedTile !== "end") {
       const containerRow = Math.floor(row / 3) * 3;
       const containerCol = Math.floor(col / 3) * 3;
@@ -94,11 +122,11 @@ function Grid() {
     let path = [];
 
     if (algorithm === 'dijkstra') {
-      path = dijkstra_util(start[0], start[1], end[0], end[1], grid);
+      path = dijkstra(start[0], start[1], end[0], end[1], grid, weights);
     }
     else if (algorithm === 'dfs') {
       var visited = Array.from({ length: 36 }, () => Array(90).fill(false));
-      path = dfs_util(visited, start[0], start[1], end[0], end[1], [], grid);
+      path = depthFirstSearch(visited, start[0], start[1], end[0], end[1], [], grid);
     }
 
     if (!path) {
@@ -157,7 +185,10 @@ function Grid() {
         </li>
         <li onClick={() => setSelectedTile("end")}>
           <div className='grid-cell end'/>
-          </li>
+        </li>
+        <li onClick={() => setSelectedTile("building")}>
+          <div className='grid-cell building'/>
+        </li>
         {
           Object.keys(tiles).map((tile) => {
             return (

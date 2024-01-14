@@ -1,4 +1,4 @@
-function dijkstra_util(start_row, start_col, end_row, end_col, grid) {
+function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
   // dist[v] ← INFINITY
   const dist = Array.from({ length: 36 }, () => Array(90).fill(Infinity));
   // prev[v] ← UNDEFINED
@@ -57,7 +57,11 @@ function dijkstra_util(start_row, start_col, end_row, end_col, grid) {
         (grid[newRow][newCol] === 1 || grid[newRow][newCol] === 4)
       ) {
         // alt <- dist[u] + Graph.Edges(u,v)
-        const alt = dist[u[0]][u[1]] + 1;
+        const alt = dist[u[0]][u[1]] + (
+          [[u[0], u[1]], [newRow, newCol]] in weights ? 
+          weights[[[u[0], u[1]], [newRow, newCol]]] : 
+          weights[[[newRow, newCol], [u[0], u[1]]]]
+        );
         //if alt < dist[v]:
         if (alt < dist[newRow][newCol]) {
           //dist[v] <- alt
@@ -71,4 +75,4 @@ function dijkstra_util(start_row, start_col, end_row, end_col, grid) {
   return false;
 }
 
-export default dijkstra_util;
+export default dijkstra;

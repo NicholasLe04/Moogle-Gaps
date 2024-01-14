@@ -29,6 +29,10 @@
   background-color: rgb(94, 94, 231);
 }
 
+.building {
+  background-color: rgb(83, 21, 21);
+}
+
 .center {
   border-radius: 0px;
   outline: 3px solid rgba(0, 0, 0, 0.795);

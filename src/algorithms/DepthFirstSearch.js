@@ -1,4 +1,4 @@
-function dfs_util(visited, start_row, start_col, end_row, end_col, path, grid) {
+function depthFirstSearch(visited, start_row, start_col, end_row, end_col, path, grid) {
   visited[start_row][start_col] = true;
   path.push([start_row, start_col]);
   
@@ -14,7 +14,7 @@ function dfs_util(visited, start_row, start_col, end_row, end_col, path, grid) {
       (0 <= newCol && newCol <= 89) &&
       !visited[newRow][newCol] &&
       (grid[newRow][newCol] === 1 || grid[newRow][newCol] === 4) &&
-      dfs_util(visited, newRow, newCol, end_row, end_col, path, grid)
+      depthFirstSearch(visited, newRow, newCol, end_row, end_col, path, grid)
     ) {
       return path;
     }
@@ -23,4 +23,4 @@ function dfs_util(visited, start_row, start_col, end_row, end_col, path, grid) {
   return false;
 }
 
-export default dfs_util;
+export default depthFirstSearch;
