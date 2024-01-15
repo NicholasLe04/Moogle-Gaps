@@ -217,7 +217,7 @@ function Grid() {
           ))}
         </div>
         <div className='side-bar'>
-          <p>Key<br/>Components</p>
+          <p>Key<br/>Tiles</p>
           <div className='tile-selector'>
             <ul>
               <li onClick={() => setSelectedTile("start")}>
@@ -237,14 +237,14 @@ function Grid() {
         </div>
         <div className='side-bar'>
           <p>
-            Select a 3x3 road tile <br/> then click on the grid <br/> to place!
+            Select a 3x3 road <br/>tile then click on <br/>the grid  to place!
           </p>
           <div className='tile-selector'>
             <ul>
               {
                 Object.keys(tiles).slice(0, 6).map((tile) => {
                   return (
-                    <li style={{margin: "20px", boxShadow: selectedTile === tile ? "0 0 16px black" : "none"}} onClick={() => setSelectedTile(tile)}>
+                    <li style={{margin: "12px", boxShadow: selectedTile === tile ? "0 0 16px black" : "none"}} onClick={() => setSelectedTile(tile)}>
                       {
                         [0,1,2].map((rowIdx) => {
                           return( <div style={{display: "flex"}}>
@@ -270,7 +270,7 @@ function Grid() {
               {
                 Object.keys(tiles).slice(6).map((tile) => {
                   return (
-                    <li style={{margin: "20px", boxShadow: selectedTile === tile ? "0 0 16px black" : "none"}} onClick={() => setSelectedTile(tile)}>
+                    <li style={{margin: "12px", boxShadow: selectedTile === tile ? "0 0 16px black" : "none"}} onClick={() => setSelectedTile(tile)}>
                       {
                         [0,1,2].map((rowIdx) => {
                           return( <div style={{display: "flex"}}>
