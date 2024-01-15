@@ -6,9 +6,10 @@ function App() {
     <div className="App">
       <h1>moogle gaps</h1>
       <p>
-        place some road pieces then place the green start point and red end point. <br/>
-        then select you pathfinding algorithm! <br/>
-        (some algorithms are not as good as others)
+        Build out a custom map by placing roads, buildings, and a start/end point!<br/>
+        Then select a pathfinding algorithm and press 'Find a Path!' to find a path from your start to end point!<br/>
+        Buildings will create 'traffic' in surrounding road tiles which can affect pathfinding. <br/>
+        Experiment with different road and building layouts and examine how paths change!
       </p>
       <Grid />
     </div>

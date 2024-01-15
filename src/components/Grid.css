@@ -1,3 +1,9 @@
+.main-content {
+  display: flex;
+  justify-content: space-between;
+  margin: 16px 48px;
+}
+
 .grid {
   display: flex;
   flex-direction: column;
@@ -20,6 +26,35 @@
   border-radius: 4px;
 }
 
+.side-bar {
+  border: 4px solid black;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.side-bar p {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.footer {
+  padding: 12px;
+  margin: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tile-selector {
+  display: flex; 
+  justify-content: center;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
 li {
   display: flex;
   flex-direction: column;
@@ -27,7 +62,7 @@ li {
 }
 
 select {
-  width: 180px;
+  width: 260px;
   height: 40px;
 
   font-weight: 600;

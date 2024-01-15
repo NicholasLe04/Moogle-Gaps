@@ -202,65 +202,113 @@ function Grid() {
 
   return (
     <>
-      <button onClick={() => {loadPreset(cityPreset)}}>City Preset</button>
-      <button onClick={() => clearGrid()}>Clear Grid</button>
-      <div className='grid'>
-        {grid.map((row, rowIndex) => (
-          <div style={{ display: "flex" }} key={rowIndex}>
-            {row.map((cell, columnIndex) => (
-              <div
-                className={`grid-cell ${types[cell]} ${(((rowIndex - 1) % 3 === 0 && (columnIndex - 1) % 3 === 0) ? ' center' : '')}`}
-                key={`${rowIndex}-${columnIndex}`}
-                onClick={() => paint(rowIndex, columnIndex)}
-              />
-            ))}
+      <div className='main-content'>
+        <div className='grid'>
+          {grid.map((row, rowIndex) => (
+            <div style={{ display: "flex" }} key={rowIndex}>
+              {row.map((cell, columnIndex) => (
+                <div
+                  className={`grid-cell ${types[cell]} ${(((rowIndex - 1) % 3 === 0 && (columnIndex - 1) % 3 === 0) ? ' center' : '')}`}
+                  key={`${rowIndex}-${columnIndex}`}
+                  onClick={() => paint(rowIndex, columnIndex)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className='side-bar'>
+          <p>Key<br/>Components</p>
+          <div className='tile-selector'>
+            <ul>
+              <li onClick={() => setSelectedTile("start")}>
+                <span>Start Point</span>
+                <div className='grid-cell-lrg start'/>
+              </li>
+              <li onClick={() => setSelectedTile("end")}>
+                <span>End Point</span>
+                <div className='grid-cell-lrg end'/>
+              </li>
+              <li onClick={() => setSelectedTile("building")}>
+                <span>Building</span>
+                <div className='grid-cell-lrg building'/>
+              </li>
+            </ul>
           </div>
-        ))}
-      </div>
-      <select onChange={(e) => {setAlgorithm(e.target.value)}}>
-        <option value="dfs">Depth First Search</option>
-        <option value="dijkstra">Dijkstra's Algorithm</option>
-        <option value="bellman ford">Bellman Ford</option>
-      </select>
-      <button onClick={pathfind}>Find a Path!</button>
-      <ul style={{display: "flex", alignItems: "center", justifyContent: "space-between", listStyle: "none"}}>
-        <li onClick={() => setSelectedTile("start")}>
-          Start
-          <div className='grid-cell-lrg start'/>
-        </li>
-        <li onClick={() => setSelectedTile("end")}>
-          End
-          <div className='grid-cell-lrg end'/>
-        </li>
-        <li onClick={() => setSelectedTile("building")}>
-          Building
-          <div className='grid-cell-lrg building'/>
-        </li>
-        {
-          Object.keys(tiles).map((tile) => {
-            return (
-              <li style={{margin: "20px"}} onClick={() => setSelectedTile(tile)}>
-                {
-                  [0,1,2].map((rowIdx) => {
-                    return( <div style={{display: "flex"}}>
+        </div>
+        <div className='side-bar'>
+          <p>
+            Select a 3x3 road tile <br/> then click on the grid <br/> to place!
+          </p>
+          <div className='tile-selector'>
+            <ul>
+              {
+                Object.keys(tiles).slice(0, 6).map((tile) => {
+                  return (
+                    <li style={{margin: "20px", boxShadow: selectedTile === tile ? "0 0 16px black" : "none"}} onClick={() => setSelectedTile(tile)}>
                       {
-                        [0,1,2].map((colIdx) => {
-                          return(
-                            <div 
-                              className='grid-cell'
-                              style={{ backgroundColor: tiles[tile].some(arr => JSON.stringify(arr) === JSON.stringify([rowIdx, colIdx])) ? "gray" : "white" }}
-                            />
-                          )
+                        [0,1,2].map((rowIdx) => {
+                          return( <div style={{display: "flex"}}>
+                            {
+                              [0,1,2].map((colIdx) => {
+                                return(
+                                  <div 
+                                    className='grid-cell'
+                                    style={{ backgroundColor: tiles[tile].some(arr => JSON.stringify(arr) === JSON.stringify([rowIdx, colIdx])) ? "gray" : "white" }}
+                                  />
+                                )
+                              })
+                            }
+                          </div>)
                         })
                       }
-                    </div>)
-                  })
-                }
-              </li>
-            )
-          })
-        }
-      </ul>
+                    </li>
+                  )
+                })
+              }
+            </ul>
+            <ul>
+              {
+                Object.keys(tiles).slice(6).map((tile) => {
+                  return (
+                    <li style={{margin: "20px", boxShadow: selectedTile === tile ? "0 0 16px black" : "none"}} onClick={() => setSelectedTile(tile)}>
+                      {
+                        [0,1,2].map((rowIdx) => {
+                          return( <div style={{display: "flex"}}>
+                            {
+                              [0,1,2].map((colIdx) => {
+                                return(
+                                  <div 
+                                    className='grid-cell'
+                                    style={{ backgroundColor: tiles[tile].some(arr => JSON.stringify(arr) === JSON.stringify([rowIdx, colIdx])) ? "gray" : "white" }}
+                                  />
+                                )
+                              })
+                            }
+                          </div>)
+                        })
+                      }
+                    </li>
+                  )
+                })
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div className='side-bar footer'>
+        <div>
+          <button onClick={() => {loadPreset(cityPreset)}}>City Preset</button>
+          <button onClick={() => clearGrid()}>Clear Grid</button>
+        </div>
+        <div>
+          <select onChange={(e) => {setAlgorithm(e.target.value)}}>
+            <option value="dfs">Depth First Search</option>
+            <option value="dijkstra">Dijkstra's (Shortest Path)</option>
+            <option value="bellman ford">Bellman Ford (Shortest Path)</option>
+          </select>
+          <button onClick={pathfind}>Find a Path!</button>
+        </div>
+      </div>
     </>
   );
 }
