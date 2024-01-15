@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './Grid.css';
+
+import bellmanFord from '../algorithms/BellmanFord';
 import depthFirstSearch from '../algorithms/DepthFirstSearch';
 import dijkstra from '../algorithms/Dijkstra';
+import cityPreset from '../presets/Presets';
 
 const tiles = {
   "empty": [],
@@ -35,9 +38,17 @@ function Grid() {
   const [selectedTile, setSelectedTile] = useState("empty");
   const [start, setStart] = useState();
   const [end, setEnd] = useState();
+  const [algorithm, setAlgorithm] = useState("dfs");
   const [currentPath, setCurrentPath] = useState([]);
   const [grid, setGrid] = useState(Array.from({ length: 36 }, () => Array(90).fill(0)));
   const [weights, setWeights] = useState(Array.from({ length: 36 }, () => Array(90).fill(1)));
+
+  const offsets = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]];
+
+  function loadPreset(preset) {
+    clearGrid();
+    setGrid(structuredClone(preset));
+  }
 
   function clearGrid() {
     setStart();
@@ -47,84 +58,100 @@ function Grid() {
     setWeights(Array.from({ length: 36 }, () => Array(90).fill(1)));
   }
 
-  function paint(row, col) {
-    resetPath();
-
+  function paintRoad(row, col) {
     const newGrid = [...grid];
     const newWeights = [...weights];
-    const offsets = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]]
-
-    // if painting a road tile
-    if (Object.keys(tiles).includes(selectedTile)) {
-      const containerRow = Math.floor(row / 3) * 3;
-      const containerCol = Math.floor(col / 3) * 3;
-      
-      // paint the 3x3 square
-      for (let rowIdx = 0; rowIdx < 3; rowIdx ++) {
-        for (let colIdx = 0; colIdx < 3; colIdx ++) {
-          const subRowIdx = containerRow + rowIdx;
-          const subColIdx = containerCol + colIdx;
-          // if painting over a building, adjust weights
-          if (newGrid[subRowIdx][subColIdx] === 6) {
-            for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
-              const offsetRow = subRowIdx+offsets[offsetIdx][0];
-              const offsetCol = subColIdx+offsets[offsetIdx][1];
-              if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
-                newWeights[offsetRow][offsetCol] --;
-              }
+    const containerRow = Math.floor(row / 3) * 3;
+    const containerCol = Math.floor(col / 3) * 3;
+    
+    // paint the 3x3 square
+    for (let rowIdx = 0; rowIdx < 3; rowIdx ++) {
+      for (let colIdx = 0; colIdx < 3; colIdx ++) {
+        const subRowIdx = containerRow + rowIdx;
+        const subColIdx = containerCol + colIdx;
+        // if painting over a building, adjust weights
+        if (newGrid[subRowIdx][subColIdx] === 6) {
+          for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
+            const offsetRow = subRowIdx+offsets[offsetIdx][0];
+            const offsetCol = subColIdx+offsets[offsetIdx][1];
+            if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
+              newWeights[offsetRow][offsetCol] --;
             }
           }
-          if (tiles[selectedTile].some(arr => JSON.stringify(arr) === JSON.stringify([rowIdx, colIdx]))) {
-            newGrid[subRowIdx][subColIdx] = 1;
-          }
-          else {
-            newGrid[subRowIdx][subColIdx] = 0;
-          }
+        }
+        if (tiles[selectedTile].some(arr => JSON.stringify(arr) === JSON.stringify([rowIdx, colIdx]))) {
+          newGrid[subRowIdx][subColIdx] = 1;
+        }
+        else {
+          newGrid[subRowIdx][subColIdx] = 0;
         }
       }
-    }
-    else if (selectedTile === "building") {
-      newGrid[row][col] = 6;
-
-      for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
-        const offsetRow = row+offsets[offsetIdx][0];
-        const offsetCol = col+offsets[offsetIdx][1];
-        if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
-          newWeights[offsetRow][offsetCol] ++;
-        }
-      }
-    }
-    else {
-      
-      // Adjust weights if painting over a building
-      if (newGrid[row][col] === 6) {
-        for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
-          const offsetRow = row+offsets[offsetIdx][0];
-          const offsetCol = col+offsets[offsetIdx][1];
-          if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
-            newWeights[offsetRow][offsetCol] --;
-          }
-        }
-      }
-
-      const newValue = selectedTile === "start" ? 3 : 4
-      newGrid.forEach(row => row.forEach((value, index) => {
-        if (value === newValue) {
-          row[index] = 0;
-        }
-      }));
-      newGrid[row][col] = newValue;
-      newValue === 3 ? setStart([row, col]) : setEnd([row, col]);
     }
     setWeights(newWeights);
     setGrid(newGrid);
   }
 
-  function pathfind(algorithm) {
+  function paintBuilding(row, col) {
+    const newGrid = [...grid];
+    const newWeights = [...weights];
+
+    newGrid[row][col] = 6;
+    for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
+      const offsetRow = row+offsets[offsetIdx][0];
+      const offsetCol = col+offsets[offsetIdx][1];
+      if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
+        newWeights[offsetRow][offsetCol] ++;
+      }
+    }
+    setWeights(newWeights);
+    setGrid(newGrid);
+  }
+
+  function paintStartEnd(row, col) {
+    const newGrid = [...grid];
+    const newWeights = [...weights];
+
+    if (newGrid[row][col] === 6) {
+      for (let offsetIdx = 0; offsetIdx < offsets.length; offsetIdx ++) {
+        const offsetRow = row+offsets[offsetIdx][0];
+        const offsetCol = col+offsets[offsetIdx][1];
+        if ((0 <= offsetRow && offsetRow <= 35) && (0 <= offsetCol && offsetCol <= 89)) {
+          newWeights[offsetRow][offsetCol] --;
+        }
+      }
+    }
+    const newValue = selectedTile === "start" ? 3 : 4
+    newGrid.forEach(row => row.forEach((value, index) => {
+      if (value === newValue) {
+        row[index] = 0;
+      }
+    }));
+    newGrid[row][col] = newValue;
+    newValue === 3 ? setStart([row, col]) : setEnd([row, col]);
+
+    setWeights(newWeights);
+    setGrid(newGrid);
+  }
+
+  function paint(row, col) {
+    resetPath();
+
+    if (Object.keys(tiles).includes(selectedTile)) {
+      paintRoad(row, col);
+    }
+    else if (selectedTile === "building") {
+      paintBuilding(row, col);
+    }
+    else {
+      paintStartEnd(row, col);
+    }
+  }
+
+  function pathfind() {
     resetPath();
 
     if (start === undefined || end === undefined) {
-      alert("you didnt set a start or end");
+      alert("You must set a start and end point to generate a path!");
       return;
     }
     
@@ -133,13 +160,16 @@ function Grid() {
     if (algorithm === 'dijkstra') {
       path = dijkstra(start[0], start[1], end[0], end[1], grid, weights);
     }
+    else if (algorithm === 'bellman ford') {
+      path = bellmanFord(start[0], start[1], end[0], end[1], grid, weights);
+    }
     else if (algorithm === 'dfs') {
       var visited = Array.from({ length: 36 }, () => Array(90).fill(false));
       path = depthFirstSearch(visited, start[0], start[1], end[0], end[1], [], grid);
     }
 
     if (!path) {
-      alert('no path');
+      alert('There is no path connecting your start and end points!');
     }
     else {
       let i = 1;
@@ -155,7 +185,7 @@ function Grid() {
           clearInterval(intervalId);
           setCurrentPath(path);
         }
-      }, 25);
+      }, 15);
     }
   }
 
@@ -172,7 +202,8 @@ function Grid() {
 
   return (
     <>
-      <button onClick={() => clearGrid()}>clear</button>
+      <button onClick={() => {loadPreset(cityPreset)}}>City Preset</button>
+      <button onClick={() => clearGrid()}>Clear Grid</button>
       <div className='grid'>
         {grid.map((row, rowIndex) => (
           <div style={{ display: "flex" }} key={rowIndex}>
@@ -186,8 +217,12 @@ function Grid() {
           </div>
         ))}
       </div>
-      <button onClick={() => pathfind('dfs')}>dfs</button>
-      <button onClick={() => pathfind('dijkstra')}>dijkstra</button>
+      <select onChange={(e) => {setAlgorithm(e.target.value)}}>
+        <option value="dfs">Depth First Search</option>
+        <option value="dijkstra">Dijkstra's Algorithm</option>
+        <option value="bellman ford">Bellman Ford</option>
+      </select>
+      <button onClick={pathfind}>Find a Path!</button>
       <ul style={{display: "flex", alignItems: "center", justifyContent: "space-between", listStyle: "none"}}>
         <li onClick={() => setSelectedTile("start")}>
           Start

@@ -10,20 +10,30 @@
   border: 1px solid black;
   width: 16px; 
   height: 16px;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .grid-cell-lrg {
   border: 1px solid black;
   width: 32px; 
   height: 32px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 li {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+select {
+  width: 180px;
+  height: 40px;
+
+  font-weight: 600;
+  font-size: 16px;
+
+  border-radius: 8px;
 }
 
 .road {
@@ -55,7 +65,7 @@ li {
 }
 
 .building {
-  background-color: rgb(83, 21, 21);
+  background-color: rgb(90, 41, 41);
 }
 
 .center {
@@ -71,4 +81,5 @@ button {
   font-weight: 600;
   font-family: sans-serif;
   margin: 5px 25px;
+  border-radius: 8px;
 }

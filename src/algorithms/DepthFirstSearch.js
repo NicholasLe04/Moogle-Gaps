@@ -7,14 +7,14 @@ function depthFirstSearch(visited, start_row, start_col, end_row, end_col, path,
   }
   const offsets = [[1,0], [0,1], [-1,0], [0,-1]];
   for (let offsetIdx = 0; offsetIdx < 4; offsetIdx ++) {
-    const newRow = start_row + offsets[offsetIdx][0];
-    const newCol = start_col + offsets[offsetIdx][1];
+    const adjRow = start_row + offsets[offsetIdx][0];
+    const adjCol = start_col + offsets[offsetIdx][1];
     if (
-      (0 <= newRow && newRow <= 35) &&
-      (0 <= newCol && newCol <= 89) &&
-      !visited[newRow][newCol] &&
-      (grid[newRow][newCol] === 1 || grid[newRow][newCol] === 4) &&
-      depthFirstSearch(visited, newRow, newCol, end_row, end_col, path, grid)
+      (0 <= adjRow && adjRow <= 35) &&
+      (0 <= adjCol && adjCol <= 89) &&
+      !visited[adjRow][adjCol] &&
+      (grid[adjRow][adjCol] === 1 || grid[adjRow][adjCol] === 4) &&
+      depthFirstSearch(visited, adjRow, adjCol, end_row, end_col, path, grid)
     ) {
       return path;
     }

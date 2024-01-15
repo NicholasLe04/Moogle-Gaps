@@ -1,6 +1,8 @@
 function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
   // dist[v] ← INFINITY
   const dist = Array.from({ length: 36 }, () => Array(90).fill(Infinity));
+  // dist[source] = 0
+  dist[start_row][start_col] = 0;
   // prev[v] ← UNDEFINED
   const prev = Array.from({ length: 36 }, () => Array(90).fill(undefined));
   const queue = [];
@@ -10,8 +12,6 @@ function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
       queue.push([rowIdx, colIdx]);
     }
   }
-  // dist[source] = 0
-  dist[start_row][start_col] = 0;
   // while Q is not empty
   while (queue.length > 0) {
     //u ← vertex in Q with min dist[u]
@@ -28,9 +28,12 @@ function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
     }
     // u = target
     if (u[0] === end_row && u[1] === end_col) {
-      let path = [];
       // if prev[u] is defined or u = source:
-      if (prev[u[0]][u[1]] !== undefined) {
+      if (prev[u[0]][u[1]] === undefined) {
+        return false;
+      }
+      else {
+        let path = [];
         // while u is defined:
         while (u !== undefined) {
           //insert u at the beginning of S
@@ -38,8 +41,8 @@ function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
           // u ← prev[u]
           u = prev[u[0]][u[1]];  
         }        
+        return path;
       }
-      return path;
     }
     // remove u from Q
     queue.splice(queue.indexOf(u), 1);
@@ -68,7 +71,6 @@ function dijkstra(start_row, start_col, end_row, end_col, grid, weights) {
       }
     }
   }
-  return false;
 }
 
 export default dijkstra;
